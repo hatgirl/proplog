@@ -9,6 +9,7 @@ module HW10 where
 
 import Prelude (Show(..), Eq(..), ($), (.), flip)
 
+
 modus_ponens :: (p -> q) -> p -> q
 modus_ponens = ($)
 
@@ -21,7 +22,7 @@ data p /\ q = Conj p q
 data False
 
 type Not p = p -> False
-nnn
+
 modus_tollens :: (p -> q) -> Not q -> Not p
 modus_tollens pq not_q = not_q . pq
 
@@ -78,23 +79,54 @@ composition (Left p_imp_q) p = Left (modus_ponens p_imp_q p)
 composition (Right p_imp_r) p = Right (modus_ponens p_imp_r p)
 
 
-reduce_double_negation :: Not (Not p) -> p
-reduce_double_negation nnp = admit
-
-
-add_double_negation :: p -> Not (Not p)
-add_double_negation p = admit
-
-
 transposition :: (p -> q) <-> (Not q -> Not p)
 transposition = Conj forwd backwd
   where forwd p_imp_q = modus_tollens p_imp_q
-        backwd nq_imp_np = reduce_double_negation . modus_tollens nq_imp_np . add_double_negation
+        backwd nq_imp_np p = case excluded_middle of
+          Left q -> q
+          Right nq -> absurd (nq_imp_np nq p)
 
-{--
+
+-- | De Morgan's law truth table
+-- |
+-- |   p  |  q  |  p \/ q |  not (p\/q)  |  Not p  |  Not q  | Not p /\ Not q
+-- |--------------------------------------------------------------------------
+-- |   0  |  0  |    0    |      1       |    1    |    1    |       1     
+-- |   0  |  1  |    1    |      0       |    1    |    0    |       0
+-- |   1  |  0  |    1    |      0       |    0    |    1    |       0
+-- |   1  |  1  |    1    |      0       |    0    |    0    |       0
+
 de_morgan :: Not (p \/ q) <-> (Not p /\ Not q)
-de_morgan = Conj forwd backwd
-  where forwd not_pvq = case p \/ q of
-        Left p -> --}
+de_morgan = Conj fwd bkwd
+  where fwd not_pvq = Conj (\x -> not_pvq (Left x)) (\y -> not_pvq (Right y))
+        bkwd (Conj np nq) (Left p) = np p
+        bkwd (Conj np nq) (Right q) = nq q
+
+
+-- | type Not p = p -> False
+
+-- | data p \/ q = Left p | Right q
+
+-- | type p <-> q = ( p -> q ) /\ (q -> p)
+
+-- | de_morgan :: [fun ( p \/ q ) -> False] -> [ (fun (p) -> False) /\ (fun (q) -> False) ]
+-- | /\  [ (fun (p) -> False) /\ (fun (q) -> False) ] -> [fun ( p \/ q ) -> False] 
+
+
+-- | de_morgan :: [fun ( Left p ) -> False ] -> [ (fun (p) -> False) /\ (fun (q) -> False) ]
+-- | /\  [ (fun (p) -> False) /\ (fun (q) -> False) ] -> [fun ( p \/ q ) -> False] 
+
+
+        
+
+
+
+           
+
+
+                          
+              
+
+
 
 
